@@ -1,9 +1,11 @@
 
-
 ###################################################
 # Exercise 4 - Natural Language Processing 67658  #
 ###################################################
 
+import torch
+import transformers
+import sklearn
 import numpy as np
 
 # subset of categories that we will use
