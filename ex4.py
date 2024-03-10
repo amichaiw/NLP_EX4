@@ -119,7 +119,7 @@ def transformer_classification(portion=1.):
     train_dataset = Dataset(tokenizer(x_train, padding=True, truncation=True), y_train)
     test_dataset = Dataset(tokenizer(x_test, padding=True, truncation=True), y_test)
 
-    trainer = Trainer(model=model, training_args=training_args,
+    trainer = Trainer(model=model, args=training_args,
                       train_dataset=train_dataset, eval_dataset=test_dataset, compute_metrics=compute_metrics)
     trainer.train()
 
