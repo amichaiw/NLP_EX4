@@ -1,4 +1,3 @@
-
 ###################################################
 # Exercise 4 - Natural Language Processing 67658  #
 ###################################################
@@ -15,6 +14,7 @@ category_dict = {'comp.graphics': 'computer graphics',
                  'talk.politics.guns': 'politics, guns'
                  }
 
+
 def get_data(categories=None, portion=1.):
     """
     Get data for given categories and portion
@@ -29,7 +29,7 @@ def get_data(categories=None, portion=1.):
                                    random_state=21)
 
     # train
-    train_len = int(portion*len(data_train.data))
+    train_len = int(portion * len(data_train.data))
     x_train = np.array(data_train.data[:train_len])
     y_train = data_train.target[:train_len]
     # remove empty entries
@@ -58,7 +58,9 @@ def linear_classification(portion=1.):
     x_train, y_train, x_test, y_test = get_data(categories=category_dict.keys(), portion=portion)
 
     # Add your code here
-    return
+    logistic_regression = LogisticRegression().fit(tf.fit_transform(x_train), y_train)
+    logistic_regression_acc = accuracy_score(y_test, logistic_regression.predict(tf.transform(x_test)))
+    return logistic_regression_acc
 
 
 # Q2
@@ -74,6 +76,7 @@ def transformer_classification(portion=1.):
         """
         Dataset object
         """
+
         def __init__(self, encodings, labels):
             self.encodings = encodings
             self.labels = labels
@@ -88,6 +91,7 @@ def transformer_classification(portion=1.):
 
     from datasets import load_metric
     metric = load_metric("accuracy")
+
     def compute_metrics(eval_pred):
         logits, labels = eval_pred
         predictions = np.argmax(logits, axis=-1)
@@ -106,6 +110,19 @@ def transformer_classification(portion=1.):
     # Add your code here
     # see https://huggingface.co/docs/transformers/v4.25.1/en/quicktour#trainer-a-pytorch-optimized-training-loop
     # Use the DataSet object defined above. No need for a DataCollator
+    training_args = TrainingArguments(output_dir="./Finetuning_results",
+                                      learning_rate=2e-5,
+                                      per_device_train_batch_size=16,
+                                      per_device_eval_batch_size=16,
+                                      num_train_epochs=3)
+
+    train_dataset = Dataset(tokenizer(x_train, padding=True, truncation=True), y_train)
+    test_dataset = Dataset(tokenizer(x_test, padding=True, truncation=True), y_test)
+
+    trainer = Trainer(model=model, training_args=training_args,
+                      train_dataset=train_dataset, eval_dataset=test_dataset, compute_metrics=compute_metrics)
+    trainer.train()
+
     return
 
 
@@ -130,11 +147,12 @@ def zeroshot_classification(portion=1.):
 
 if __name__ == "__main__":
     portions = [0.1, 0.5, 1.]
+
     # Q1
-    print("Logistic regression results:")
-    for p in portions:
-        print(f"Portion: {p}")
-        print(linear_classification(p))
+    # print("Logistic regression results:")
+    # for p in portions:
+    #     print(f"Portion: {p}")
+    #     print(linear_classification(p))
 
     # Q2
     print("\nFinetuning results:")
@@ -142,6 +160,6 @@ if __name__ == "__main__":
         print(f"Portion: {p}")
         print(transformer_classification(portion=p))
 
-    # Q3
-    print("\nZero-shot result:")
-    print(zeroshot_classification())
+    # # Q3
+    # print("\nZero-shot result:")
+    # print(zeroshot_classification())
