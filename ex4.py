@@ -1,8 +1,10 @@
-###################################################
-# Exercise 4 - Natural Language Processing 67658  #
-###################################################
+# ###################################################
+# # Exercise 4 - Natural Language Processing 67658  #
+# ###################################################
 
 import numpy as np
+import plotly.express as px
+import plotly.io as pio
 
 # subset of categories that we will use
 category_dict = {'comp.graphics': 'computer graphics',
@@ -104,10 +106,6 @@ def transformer_classification(portion=1.):
                                                                problem_type="single_label_classification")
 
     x_train, y_train, x_test, y_test = get_data(categories=category_dict.keys(), portion=portion)
-
-    # Add your code here
-    # see https://huggingface.co/docs/transformers/v4.25.1/en/quicktour#trainer-a-pytorch-optimized-training-loop
-    # Use the DataSet object defined above. No need for a DataCollator
     training_args = TrainingArguments(output_dir="./Finetuning_results",
                                       learning_rate=2e-5,
                                       per_device_train_batch_size=16,
@@ -123,7 +121,6 @@ def transformer_classification(portion=1.):
     trainer.train()
     return trainer.evaluate()
 
-
 # Q3
 def zeroshot_classification(portion=1.):
     """
@@ -138,29 +135,40 @@ def zeroshot_classification(portion=1.):
     clf = pipeline("zero-shot-classification", model='cross-encoder/nli-MiniLM2-L6-H768',
                    device=torch.device('cuda:0' if torch.cuda.is_available() else "cpu"))
     candidate_labels = list(category_dict.values())
-
-    # Add your code here
-    # see https://huggingface.co/docs/transformers/v4.25.1/en/main_classes/pipelines#transformers.ZeroShotClassificationPipeline
-
     results = clf(x_test, candidate_labels)
     acc = accuracy_score(y_test, [candidate_labels.index(res['labels'][0]) for res in results])
     return acc
 
+def plot(graph_title, accuracy_res):
+    portions = [0.1, 0.5, 1]
+    fig = px.line(x=portions, y=accuracy_res, title=graph_title)
+    fig.update_layout(xaxis_title="portion", yaxis_title="accuracy",
+                      xaxis=dict(tickvals=list(portions), tickmode='array'))
+    pio.write_image(fig, f'{graph_title}.png')
+    fig.show()
 
 if __name__ == "__main__":
     portions = [0.1, 0.5, 1.]
 
     # Q1
     print("Logistic regression results:")
+    linear_acc = []
     for p in portions:
         print(f"Portion: {p}")
-        print(linear_classification(p))
+        accuracy = linear_classification(p)
+        linear_acc.append(accuracy)
+        print(accuracy)
+    plot(f"Logistic regression accuracy", linear_acc)
 
     # Q2
     print("\nFinetuning results:")
+    transformer_acc = []
     for p in portions:
         print(f"Portion: {p}")
-        print(transformer_classification(portion=p))
+        accuracy = transformer_classification(portion=p)
+        transformer_acc.append(accuracy['eval_accuracy'])
+        print(accuracy)
+    plot(f"Finetuning accuracy", transformer_acc)
 
     # Q3
     print("\nZero-shot result:")
