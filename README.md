@@ -1,4 +1,4 @@
-Natural Language Processing Project
+Category Prediction from News Articles: A NLP Study of Linear Regression, Transformer Fine-Tuning, and Zero-Shot Learning
 
 Utilized the sklearn.datasets.fetch_20newsgroups dataset to train models on the following categories: 
 'computer graphics', 'baseball', 'science, electronics', and 'politics, guns'. 
